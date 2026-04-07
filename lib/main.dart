@@ -13,6 +13,7 @@ late String g;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   g = await File("world.rube").readAsString();
+  print('uh-WAIT');
   runApp(const MyApp());
 }
 
@@ -43,6 +44,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   void subtitle(String x) {
     setState(() {
+      print(x);
       subtitles.add(x);
     });
   }
@@ -371,59 +373,62 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MouseRegion(
-        onHover: (PointerHoverEvent x) {
-          mouseX = x.position.dx ~/ (1440 / width);
-          mouseY = x.position.dy ~/ (900 / (grid.length / width));
-          if(mouseDown) placeGridCell();
-        },
-        opaque: false,
-        child: GestureDetector(
-          key: const Key('test'),
-          onTapDown: (TapDownDetails x) {
-            print("TAP");
-            mouseDown = true;
-            placeGridCell();
+    return LayoutBuilder(builder: (context, constraints) {
+      return Scaffold(
+        body: MouseRegion(
+          onHover: (PointerHoverEvent x) {
+            mouseX = x.position.dx ~/ (constraints.maxWidth / width);
+            mouseY = x.position.dy ~/
+                (constraints.maxHeight / (grid.length / width));
+            if (mouseDown) placeGridCell();
           },
-          onTapUp: (TapUpDetails x) {
-            print("UN-TAP");
-            mouseDown = false;
-          },
-          behavior: HitTestBehavior.opaque,
-          child: Stack(
-            children: [
-              SizedBox.expand(
-                child: GridDrawer(grid, width),
-              ),
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: () => setState(() => paused = !paused),
-                      child: Container(
-                        child: Text(paused ? "Unpause" : "Pause"),
-                        color: Colors.yellow,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        File('world.rube').writeAsStringSync(grid.join(''));
-                      },
-                      child: Container(
-                        child: const Text("Save"),
-                        color: Colors.yellow,
-                      ),
-                    ),
-                  ],
+          opaque: false,
+          child: GestureDetector(
+            key: const Key('test'),
+            onTapDown: (TapDownDetails x) {
+              print("TAP");
+              mouseDown = true;
+              placeGridCell();
+            },
+            onTapUp: (TapUpDetails x) {
+              print("UN-TAP");
+              mouseDown = false;
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Stack(
+              children: [
+                SizedBox.expand(
+                  child: GridDrawer(grid, width),
                 ),
-              ),
-            ],
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () => setState(() => paused = !paused),
+                        child: Container(
+                          child: Text(paused ? "Unpause" : "Pause"),
+                          color: Colors.yellow,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          File('world.rube').writeAsStringSync(grid.join(''));
+                        },
+                        child: Container(
+                          child: const Text("Save"),
+                          color: Colors.yellow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   String selected = " ";
